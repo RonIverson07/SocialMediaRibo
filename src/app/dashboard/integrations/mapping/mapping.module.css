@@ -66,3 +66,17 @@
 .deleteBtn:hover {
     text-decoration: underline;
 }
+
+.sectionTitle {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: #000000;
+}
+
+.sectionMuted {
+    font-size: 0.9rem;
+    color: #666666;
+    margin-bottom: 2rem;
+    font-weight: 500;
+}

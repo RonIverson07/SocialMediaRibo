@@ -2,78 +2,59 @@ import { NextRequest, NextResponse } from "next/server";
 import { LeadService } from "@/services/lead.service";
 import { AIService } from "@/services/ai.service";
 
-/**
- * WhatsApp Cloud API Webhook
- * TRACKING ONLY: minimal event storage, no transcript.
- */
+export async function GET(req: NextRequest) {
+    const { searchParams } = new URL(req.url);
+    const token = searchParams.get("hub.verify_token");
+    const challenge = searchParams.get("hub.challenge");
+    if (token === process.env.FB_VERIFY_TOKEN) return new Response(challenge);
+    return new Response("Forbidden", { status: 403 });
+}
+
 export async function POST(req: NextRequest) {
     try {
         const payload = await req.json();
 
-        // 1. Signature Verification (Placeholder)
-        // TODO: Verify X-Hub-Signature-256 for WhatsApp
+        // 1. WhatsApp Webhook Processing (Spec 3.C)
+        const value = payload.entry?.[0]?.changes?.[0]?.value;
+        const messages = value?.messages || [];
 
-        if (payload.object === 'whatsapp_business_account') {
-            for (const entry of payload.entry) {
-                for (const change of entry.changes) {
-                    if (change.field === 'messages') {
-                        const value = change.value;
-                        if (value.messages) {
-                            for (const message of value.messages) {
-                                const phone = message.from;
-                                const hasMedia = !!(message.image || message.video || message.document || message.audio);
-                                const mediaType = message.type !== 'text' ? message.type : null;
+        for (const msg of messages) {
+            const waId = msg.from; // Sender phone number
+            const messageId = msg.id;
+            const text = msg.text?.body;
+            const hasMedia = !!(msg.image || msg.document || msg.audio || msg.video);
+            const mediaType = msg.type !== 'text' ? msg.type : null;
 
-                                // Create Lead Event (Inbound Tracker)
-                                const { event } = await LeadService.processInboundEvent({
-                                    source: 'whatsapp',
-                                    externalId: message.id,
-                                    actorKey: phone,
-                                    summary: `WhatsApp inquiry received${hasMedia ? ` (Media: ${mediaType})` : ''}`,
-                                    payload: {
-                                        from: phone,
-                                        message_id: message.id,
-                                        type: mediaType || 'text',
-                                        has_media: hasMedia
-                                    },
-                                    snippet: message.text?.body || ""
-                                });
+            // 2. Process as Lead Event
+            const { isDuplicate, event } = await LeadService.processInboundEvent({
+                source: 'whatsapp',
+                externalId: messageId,
+                actorKey: waId, // WhatsApp E.164 phone
+                summary: `Inbound inquiry via WhatsApp${hasMedia ? ` (${mediaType})` : ''}`,
+                payload: msg,
+                snippet: text || `[Media: ${mediaType}]`
+            });
 
-                                // Trigger AI (Async)
-                                AIService.classifyLeadEvent(event).then(async (result) => {
-                                    await LeadService.createTimelineEntry(
-                                        event.lead_id,
-                                        `AI suggested stage: ${result.suggested_stage_label} (${result.confidence_score}%)`,
-                                        'system',
-                                        {
-                                            confidence: result.confidence_score,
-                                            reasons: result.reasons_json
-                                        }
-                                    );
-                                });
-                            }
-                        }
-                    }
-                }
+            if (isDuplicate) continue;
+
+            // 3. Update media flags then Async AI (Spec 3.C + 5.3)
+            if (event) {
+                // Background task for DB updates & AI
+                (async () => {
+                    const { supabase } = await import('@/lib/supabase');
+                    await supabase
+                        .from('lead_events')
+                        .update({ has_media: hasMedia, media_type: mediaType })
+                        .eq('id', (event as any).id);
+
+                    await AIService.classifyLeadEvent(event as any);
+                })().catch(e => console.error("[Async Process Error]:", e));
             }
         }
 
-        return NextResponse.json({ received: true });
+        return NextResponse.json({ success: true });
     } catch (error) {
         console.error("[WhatsApp Webhook Error]:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
-}
-
-export async function GET(req: NextRequest) {
-    const { searchParams } = new URL(req.url);
-    const mode = searchParams.get('hub.mode');
-    const token = searchParams.get('hub.verify_token');
-    const challenge = searchParams.get('hub.challenge');
-
-    if (mode === 'subscribe' && token === 'RIBO_SECRET_TOKEN') {
-        return new NextResponse(challenge);
-    }
-
-    return new NextResponse('Verification failed', { status: 403 });
 }

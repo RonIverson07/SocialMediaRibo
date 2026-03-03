@@ -7,8 +7,8 @@ import { supabase } from '@/lib/supabase';
 
 function LogsContent() {
     const searchParams = useSearchParams();
-    const filterChannel = searchParams.get('type');
-    const [events, setEvents] = useState<any[]>([]);
+    const type = searchParams.get('type');
+    const [logs, setLogs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -16,79 +16,77 @@ function LogsContent() {
             setLoading(true);
             let query = supabase
                 .from('lead_events')
-                .select('*')
-                .order('created_at', { ascending: false });
+                .select('*, contacts(primary_email)')
+                .order('received_at', { ascending: false })
+                .limit(50);
 
-            if (filterChannel) {
-                query = query.eq('channel', filterChannel);
+            if (type) {
+                query = query.eq('channel', type);
             }
 
-            const { data } = await query.limit(50);
-            setEvents(data || []);
+            const { data } = await query;
+            setLogs(data || []);
             setLoading(false);
         }
         fetchLogs();
-    }, [filterChannel]);
+    }, [type]);
+
+    if (loading) return <div className={styles.container}><p>Loading audit logs...</p></div>;
 
     return (
-        <div className="ribo-card">
-            {filterChannel && (
-                <div style={{ padding: '0 1.5rem 1rem', fontSize: '0.9rem', color: '#666' }}>
-                    Showing logs for: <strong>{filterChannel.toUpperCase()}</strong>
-                    <a href="/dashboard/integrations/logs" style={{ marginLeft: '1rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 700 }}>Clear Filter</a>
+        <div className={styles.container}>
+            <header className={styles.header}>
+                <div>
+                    <h1>Integration Inbound Logs</h1>
+                    <p>Audit trail of all raw inbound events and payloads received via {type || 'all channels'}.</p>
                 </div>
-            )}
-            <table className={styles.table}>
-                <thead>
-                    <tr>
-                        <th>Time Received</th>
-                        <th>Channel</th>
-                        <th>Event Details</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {events.map((event) => (
-                        <tr key={event.id}>
-                            <td className={styles.time}>
-                                {new Date(event.created_at).toLocaleString()}
-                            </td>
-                            <td>
-                                <span className={styles.channelTag} data-channel={event.channel}>
-                                    {event.channel.toUpperCase()}
-                                </span>
-                            </td>
-                            <td>
-                                <span className={styles.snippet}>
-                                    {event.summary_text || event.snippet_text || 'No description available'}
-                                </span>
-                            </td>
-                            <td>
-                                <span className={styles.statusBadge}>PROCESSED</span>
-                            </td>
-                        </tr>
-                    ))}
-                    {events.length === 0 && !loading && (
+            </header>
+
+            <div className="ribo-card" style={{ padding: 0, overflow: 'hidden' }}>
+                <table className={styles.table}>
+                    <thead>
                         <tr>
-                            <td colSpan={4} className={styles.empty}>
-                                No inbound logs found. {filterChannel ? `No logs for ${filterChannel}.` : ''}
-                            </td>
+                            <th>Received At</th>
+                            <th>Channel</th>
+                            <th>Lead/Contact</th>
+                            <th>Summary</th>
+                            <th>Status</th>
                         </tr>
-                    )}
-                    {loading && (
-                        <tr>
-                            <td colSpan={4} className={styles.empty}>Loading logs...</td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {logs.map((log) => (
+                            <tr key={log.id}>
+                                <td className={styles.time}>{new Date(log.received_at).toLocaleString()}</td>
+                                <td>
+                                    <span className={styles.channelBadge} data-source={log.channel}>
+                                        {log.channel.toUpperCase()}
+                                    </span>
+                                </td>
+                                <td className={styles.leadCell}>
+                                    {log.contacts?.primary_email || 'New Connection'}
+                                    <span className={styles.psid}>{log.external_actor_key}</span>
+                                </td>
+                                <td className={styles.summaryCell}>{log.summary_text}</td>
+                                <td>
+                                    <span className={styles.statusBadge}>SUCCESS</span>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+                {logs.length === 0 && (
+                    <div style={{ padding: '3rem', textAlign: 'center', color: '#666' }}>
+                        No inbound events recorded for this channel yet.
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
 
-export default function InboundLogsPage() {
+export default function LogsPage() {
     return (
-        <Suspense fallback={<div><p>Loading logs table...</p></div>}>
+        <Suspense fallback={<div>Loading logs...</div>}>
             <LogsContent />
         </Suspense>
     );

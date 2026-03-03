@@ -38,27 +38,15 @@ export async function POST(req: NextRequest) {
             snippet: payload.message_snippet || ""
         });
 
-        // 4. AI Classification
-        const aiResult = await AIService.classifyLeadEvent(event);
-
-        // 5. Log AI Result to Timeline
-        await LeadService.createTimelineEntry(
-            event.lead_id,
-            `AI suggested stage: ${aiResult.suggested_stage_label} (${aiResult.confidence_score}%)`,
-            'system',
-            {
-                confidence: aiResult.confidence_score,
-                reasons: aiResult.reasons_json
-            }
+        // 4. Asynchronous AI Classification (Spec 5.3)
+        AIService.classifyLeadEvent(event as any).catch(e =>
+            console.error("[Async AI Error]:", e)
         );
 
+        // 5. Instant Response to Plugin
         return NextResponse.json({
             success: true,
-            event_id: event.id,
-            ai_suggestion: {
-                stage: aiResult.suggested_stage_label,
-                confidence: aiResult.confidence_score
-            }
+            event_id: event.id
         });
 
     } catch (error) {

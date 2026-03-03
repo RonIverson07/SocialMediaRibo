@@ -17,6 +17,7 @@ function IntegrationsContent() {
     const filter = searchParams.get('filter');
     const [integrations, setIntegrations] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isTesting, setIsTesting] = useState<string | null>(null);
     const [modalConfig, setModalConfig] = useState<{ show: boolean, id: string | null, type: 'connect' | 'disconnect' | 'delete' | null }>({
         show: false,
         id: null,
@@ -109,6 +110,43 @@ function IntegrationsContent() {
         });
     };
 
+    const handleTestConnection = async (integration: any) => {
+        setIsTesting(integration.id);
+        const testPayload = {
+            submission_id: `test_${Math.random().toString(36).substring(7)}`,
+            from: "+63900000000",
+            sender: { id: "test_psid" },
+            form_id: "test_form",
+            data: { email: "test@ribo.crm", full_name: "Test Lead" }
+        };
+
+        try {
+            const endpoint = integration.id === 'wordpress' ? '/api/inbound/wordpress/leads' :
+                integration.id === 'whatsapp' ? '/api/webhooks/whatsapp/messages' :
+                    integration.id === 'messenger' ? '/api/webhooks/facebook/messenger' :
+                        '/api/webhooks/facebook/leads';
+
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer RIBO_WP_TEST_KEY' // Simple token for testing
+                },
+                body: JSON.stringify(integration.id === 'whatsapp' ? { entry: [{ changes: [{ value: { messages: [testPayload] } }] }] } : testPayload)
+            });
+
+            if (res.ok) {
+                alert(`🚀 Connection to ${integration.name} is ACTIVE!\nTest event processed.`);
+            } else {
+                alert(`❌ Connection Test Failed: ${res.statusText}`);
+            }
+        } catch (err) {
+            alert('❌ Network Error: Could not reach integration endpoint.');
+        } finally {
+            setIsTesting(null);
+        }
+    };
+
     const confirmToggle = async () => {
         if (!modalConfig.id || !modalConfig.type) return;
 
@@ -156,6 +194,14 @@ function IntegrationsContent() {
                         <span>Last inbound: {integration.lastEvent}</span>
                     </div>
                     <div className={styles.actions}>
+                        <button
+                            className="btn btn-secondary"
+                            disabled={isTesting === integration.id || integration.status !== 'Connected'}
+                            onClick={() => handleTestConnection(integration)}
+                        >
+                            {isTesting === integration.id ? 'Testing...' : 'Test'}
+                        </button>
+                        <a href={`/dashboard/integrations/mapping?type=${integration.id}`} className="btn btn-secondary">Configure</a>
                         {integration.status === 'Connected' ? (
                             <button
                                 className="btn btn-secondary"
@@ -172,7 +218,6 @@ function IntegrationsContent() {
                                 Connect
                             </button>
                         )}
-                        <a href={`/dashboard/integrations/mapping?type=${integration.id}`} className="btn btn-secondary">Configure</a>
                     </div>
                     <div className={styles.secondaryActions}>
                         <a href="/dashboard/settings/ai">AI Settings</a>

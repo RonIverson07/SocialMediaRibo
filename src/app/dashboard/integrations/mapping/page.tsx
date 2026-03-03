@@ -9,6 +9,17 @@ const CRM_FIELDS = [
     'Full Name', 'Email', 'Phone', 'Company', 'Website', 'Job Title', 'Source', 'Message'
 ];
 
+const AI_LABELS = [
+    'High Intent', 'Urgent Inquiry', 'Information Request', 'Spam/Bot', 'Customer Support'
+];
+
+const PIPELINE_STAGES = [
+    { id: 'stage_discovery', name: 'Discovery' },
+    { id: 'stage_negotiation', name: 'Negotiation' },
+    { id: 'stage_closed_won', name: 'Closed Won' },
+    { id: 'stage_closed_lost', name: 'Closed Lost' }
+];
+
 const INTEGRATION_NAMES: Record<string, string> = {
     'fb_lead_ads': 'Facebook Lead Ads',
     'messenger': 'Facebook Messenger',
@@ -22,12 +33,18 @@ interface MappingRow {
     crm: string;
 }
 
+interface StageMapping {
+    ai_label: string;
+    stage_id: string;
+}
+
 function MappingContent() {
     const searchParams = useSearchParams();
     const integrationId = searchParams.get('type') || 'fb_lead_ads';
     const displayName = INTEGRATION_NAMES[integrationId] || 'External Integration';
 
     const [mapping, setMapping] = useState<MappingRow[]>([]);
+    const [stageMapping, setStageMapping] = useState<StageMapping[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
@@ -38,26 +55,32 @@ function MappingContent() {
     useEffect(() => {
         async function fetchMapping() {
             setLoading(true);
-            const { data } = await supabase
+
+            // 1. Fetch Field Mapping
+            const { data: fieldData } = await supabase
                 .from('integration_mappings')
                 .select('id, external_field, crm_field')
                 .eq('integration_id', integrationId);
 
-            if (data && data.length > 0) {
-                setMapping(data.map(row => ({
+            if (fieldData && fieldData.length > 0) {
+                setMapping(fieldData.map(row => ({
                     id: row.id,
                     external: row.external_field,
                     crm: row.crm_field
                 })));
             } else {
-                // Initialize default mapping if nothing found
                 setMapping([
                     { external: 'full_name', crm: 'Full Name' },
-                    { external: 'user_email', crm: 'Email' },
-                    { external: 'phone_number', crm: 'Phone' },
-                    { external: 'customer_query', crm: 'Message' }
+                    { external: 'user_email', crm: 'Email' }
                 ]);
             }
+
+            // 2. Fetch Stage Mapping (Placeholder labels)
+            setStageMapping(AI_LABELS.map(label => ({
+                ai_label: label,
+                stage_id: 'stage_discovery'
+            })));
+
             setLoading(false);
         }
         fetchMapping();
@@ -66,23 +89,25 @@ function MappingContent() {
     const handleSave = async () => {
         setSaving(true);
         try {
-            // Bulk upsert mappings for this integration
-            const upsertData = mapping.map(row => ({
+            // 1. Bulk upsert field mappings
+            const fieldUpsert = mapping.map(row => ({
                 integration_id: integrationId,
                 external_field: row.external,
                 crm_field: row.crm,
             }));
 
-            const { error: deleteError } = await supabase
-                .from('integration_mappings')
-                .delete()
-                .eq('integration_id', integrationId);
+            // 2. Bulk upsert stage mappings (Spec 2.2.C)
+            const stageUpsert = stageMapping.map(row => ({
+                integration_id: `ai_stage_${integrationId}`,
+                external_field: row.ai_label,
+                crm_field: row.stage_id,
+            }));
 
-            if (deleteError) throw deleteError;
+            // Delete old mappings and insert new ones
+            await supabase.from('integration_mappings').delete().eq('integration_id', integrationId);
+            await supabase.from('integration_mappings').delete().eq('integration_id', `ai_stage_${integrationId}`);
 
-            const { error } = await supabase
-                .from('integration_mappings')
-                .insert(upsertData);
+            const { error } = await supabase.from('integration_mappings').insert([...fieldUpsert, ...stageUpsert]);
 
             if (error) throw error;
             alert(`✅ Mapping for ${displayName} saved successfully!`);
@@ -166,7 +191,9 @@ function MappingContent() {
                 </div>
             </header>
 
-            <div className="ribo-card">
+            <div className="ribo-card" style={{ marginBottom: '3rem' }}>
+                <h3 className={styles.sectionTitle}>Field Mapping</h3>
+                <p className={styles.sectionMuted}>Link external keys from payloads to your CRM profile fields.</p>
                 <table className={styles.table}>
                     <thead>
                         <tr>
@@ -222,6 +249,39 @@ function MappingContent() {
                                 <button className="btn btn-secondary" onClick={handleAdd}>Add Row</button>
                             </td>
                         </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div className="ribo-card">
+                <h3 className={styles.sectionTitle}>AI Stage Mapping (Spec 2.2.C)</h3>
+                <p className={styles.sectionMuted}>Map AI-detected intent labels to your pipeline process.</p>
+                <table className={styles.table}>
+                    <thead>
+                        <tr>
+                            <th>AI Output Label</th>
+                            <th>Target Pipeline Stage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {stageMapping.map((row, index) => (
+                            <tr key={index}>
+                                <td>{row.ai_label}</td>
+                                <td>
+                                    <select
+                                        className={styles.select}
+                                        value={row.stage_id}
+                                        onChange={(e) => {
+                                            const newS = [...stageMapping];
+                                            newS[index].stage_id = e.target.value;
+                                            setStageMapping(newS);
+                                        }}
+                                    >
+                                        {PIPELINE_STAGES.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                    </select>
+                                </td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
             </div>

@@ -40,51 +40,17 @@
     color: #000000;
 }
 
-.profile p {
-    font-size: 1.15rem;
+.contactDetails {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.contactDetails span {
+    font-size: 1rem;
     font-weight: 500;
     color: #666666;
-    margin-bottom: 0px;
-}
-
-.badge {
-    background: #EBF8FF;
-    color: #0010B3;
-    padding: 0.75rem 1.5rem;
-    border-radius: 12px;
-    font-weight: 800;
-    font-size: 0.95rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border: 1px solid rgba(0, 16, 179, 0.1);
-}
-
-.mainGrid {
-    display: grid;
-    grid-template-columns: 1.5fr 400px;
-    gap: 3rem;
-}
-
-.timelineSection h2 {
-    font-size: 1.75rem;
-    margin-bottom: 2rem;
-    color: #000000;
-}
-
-.timeline {
-    display: flex;
-    flex-direction: column;
-}
-
-.timelineItem {
-    position: relative;
-    padding-bottom: 4rem;
-    padding-left: 3.5rem;
-    border-left: 3px solid #eeeeee;
-}
-
-.timelineItem:last-child {
-    border-left-color: transparent;
 }
 
 .timelineDot {
@@ -97,71 +63,76 @@
     border: 4px solid #dddddd;
     border-radius: 50%;
     z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .timelineItem[data-type="lead_event"] .timelineDot {
     border-color: #0010B3;
+    width: 28px;
+    height: 28px;
+    left: -15px;
 }
 
-.eventHeader {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 1.25rem;
-    align-items: baseline;
-}
-
-.eventHeader strong {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: #000000;
-}
-
-.time {
+.sourceIcon {
     font-size: 0.85rem;
-    color: #999999;
-    font-weight: 700;
-}
-
-.summary {
-    font-size: 1.05rem;
-    margin-bottom: 1.5rem;
-    color: #444444;
 }
 
 .aiResult {
-    background-color: #f9fafb;
-    border: 1px solid #eeeeee;
-    border-radius: 20px;
-    padding: 2rem;
-    margin-top: 1.5rem;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
-.confidenceBar {
-    height: 6px;
-    background: #E5E7EB;
-    border-radius: 100px;
+.aiHighConf {
+    background-color: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.aiHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 1rem;
-    overflow: hidden;
 }
 
-.confidenceProgress {
-    height: 100%;
-    background-color: #0010B3;
+.aiBadge {
+    font-size: 0.75rem;
+    font-weight: 800;
+    background: #0010B3;
+    color: white;
+    padding: 0.25rem 0.75rem;
     border-radius: 100px;
+}
+
+.aiHighConf .aiBadge {
+    background: #059669;
 }
 
 .confidenceText {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 800;
-    color: #0010B3;
-    display: block;
-    margin-bottom: 1rem;
+    color: #475569;
+}
+
+.aiHighConf .confidenceText {
+    color: #059669;
+}
+
+.reasons {
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
 .reasons li {
-    font-size: 0.95rem;
-    margin-bottom: 0.75rem;
-    color: #4B5563;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    color: #64748b;
     font-weight: 500;
 }
 

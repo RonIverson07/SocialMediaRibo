@@ -111,7 +111,12 @@ export default function LeadDetailsPage({ params }: { params: Promise<{ id: stri
                     </div>
                     <div>
                         <h1>{lead.contacts?.primary_email || 'Unnamed Lead'}</h1>
-                        <p>{lead.contacts?.primary_email} • {lead.contacts?.primary_phone_e164 || 'No Phone'}</p>
+                        <div className={styles.contactDetails}>
+                            <span>📧 {lead.contacts?.primary_email}</span>
+                            {lead.contacts?.primary_phone_e164 && <span>📞 {lead.contacts?.primary_phone_e164}</span>}
+                            {lead.contacts?.facebook_psid && <span title="Messenger PSID">💬 FB: {lead.contacts.facebook_psid.substring(0, 8)}...</span>}
+                            {lead.contacts?.whatsapp_phone_e164 && <span title="WhatsApp">📱 WA: {lead.contacts.whatsapp_phone_e164}</span>}
+                        </div>
                     </div>
                 </div>
                 <div className={styles.badge}>{lead.pipeline_stage_id.replace('stage_', '').toUpperCase()}</div>
@@ -121,36 +126,56 @@ export default function LeadDetailsPage({ params }: { params: Promise<{ id: stri
                 <section className={styles.timelineSection}>
                     <h2>Activity Timeline</h2>
                     <div className={styles.timeline}>
-                        {timeline.map((event: any) => (
-                            <div key={event.id} className={styles.timelineItem} data-type={event.type}>
-                                <div className={styles.timelineDot}></div>
-                                <div className={styles.timelineContent}>
-                                    <div className={styles.eventHeader}>
-                                        <strong>{event.type.replace('_', ' ').toUpperCase()}</strong>
-                                        <span className={styles.time}>
-                                            {new Date(event.created_at).toLocaleString()}
-                                        </span>
+                        {timeline.map((event: any) => {
+                            const isAI = event.type === 'ai_suggestion' || event.metadata_json?.confidence;
+                            const isLeadEvent = event.type === 'lead_event';
+                            const source = event.metadata_json?.source || lead.lead_source;
+
+                            return (
+                                <div key={event.id} className={styles.timelineItem} data-type={event.type}>
+                                    <div className={styles.timelineDot}>
+                                        {isLeadEvent && (
+                                            <span className={styles.sourceIcon}>
+                                                {source === 'whatsapp' ? '📱' : source === 'messenger' ? '💬' : '📊'}
+                                            </span>
+                                        )}
                                     </div>
-
-                                    {event.summary && <p className={styles.summary}>{event.summary}</p>}
-
-                                    {event.metadata_json?.confidence && (
-                                        <div className={styles.aiResult}>
-                                            <div className={styles.confidenceBar}>
-                                                <div
-                                                    className={styles.confidenceProgress}
-                                                    style={{ width: `${event.metadata_json.confidence}%` }}
-                                                ></div>
-                                            </div>
-                                            <span className={styles.confidenceText}>{event.metadata_json.confidence}% Confidence</span>
-                                            <ul className={styles.reasons}>
-                                                {event.metadata_json.reasons?.map((r: string, i: number) => <li key={i}>{r}</li>)}
-                                            </ul>
+                                    <div className={styles.timelineContent}>
+                                        <div className={styles.eventHeader}>
+                                            <strong>
+                                                {isLeadEvent ? `INBOUND: ${source.toUpperCase()}` : event.type.replace('_', ' ').toUpperCase()}
+                                            </strong>
+                                            <span className={styles.time}>
+                                                {new Date(event.created_at).toLocaleString()}
+                                            </span>
                                         </div>
-                                    )}
+
+                                        {event.summary && <p className={styles.summary}>{event.summary}</p>}
+
+                                        {event.metadata_json?.confidence && (
+                                            <div className={`${styles.aiResult} ${event.metadata_json.confidence > 80 ? styles.aiHighConf : ''}`}>
+                                                <div className={styles.aiHeader}>
+                                                    <span className={styles.aiBadge}>AI SIGNAL</span>
+                                                    <span className={styles.confidenceText}>{event.metadata_json.confidence}% Confidence</span>
+                                                </div>
+                                                <div className={styles.confidenceBar}>
+                                                    <div
+                                                        className={styles.confidenceProgress}
+                                                        style={{
+                                                            width: `${event.metadata_json.confidence}%`,
+                                                            background: event.metadata_json.confidence > 80 ? '#059669' : '#0010B3'
+                                                        }}
+                                                    ></div>
+                                                </div>
+                                                <ul className={styles.reasons}>
+                                                    {event.metadata_json.reasons?.map((r: string, i: number) => <li key={i}>• {r}</li>)}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                         {timeline.length === 0 && <p className={styles.muted}>No activity recorded yet.</p>}
                     </div>
                 </section>
