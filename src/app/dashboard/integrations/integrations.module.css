@@ -30,21 +30,30 @@
     padding-bottom: 1px;
 }
 
+.tabs a,
 .tabs button {
     background: none;
     border: none;
     padding: 1.25rem 0;
     color: #000000;
     font-weight: 800;
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     cursor: pointer;
     border-bottom: 3px solid transparent;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
 }
 
-.tabs .activeTab {
-    color: var(--primary);
-    border-bottom-color: var(--primary);
+.activeTab {
+    color: var(--primary) !important;
+    border-bottom-color: var(--primary) !important;
+}
+
+.logTab {
+    color: #8C8CBA;
+    /* Light purple/gray as seen in screenshot */
 }
 
 .grid {

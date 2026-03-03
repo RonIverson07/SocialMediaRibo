@@ -31,65 +31,64 @@ function LogsContent() {
     }, [filterChannel]);
 
     return (
-        <div className={styles.container}>
-            <header className={styles.header}>
-                <h1>Inbound Logs</h1>
-                <p>History of all events received from connected integrations.</p>
-            </header>
-
-            <div className="ribo-card">
-                <table className={styles.table}>
-                    <thead>
-                        <tr>
-                            <th>Time Received</th>
-                            <th>Channel</th>
-                            <th>Event Details</th>
-                            <th>Status</th>
+        <div className="ribo-card">
+            {filterChannel && (
+                <div style={{ padding: '0 1.5rem 1rem', fontSize: '0.9rem', color: '#666' }}>
+                    Showing logs for: <strong>{filterChannel.toUpperCase()}</strong>
+                    <a href="/dashboard/integrations/logs" style={{ marginLeft: '1rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 700 }}>Clear Filter</a>
+                </div>
+            )}
+            <table className={styles.table}>
+                <thead>
+                    <tr>
+                        <th>Time Received</th>
+                        <th>Channel</th>
+                        <th>Event Details</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {events.map((event) => (
+                        <tr key={event.id}>
+                            <td className={styles.time}>
+                                {new Date(event.created_at).toLocaleString()}
+                            </td>
+                            <td>
+                                <span className={styles.channelTag} data-channel={event.channel}>
+                                    {event.channel.toUpperCase()}
+                                </span>
+                            </td>
+                            <td>
+                                <span className={styles.snippet}>
+                                    {event.summary_text || event.snippet_text || 'No description available'}
+                                </span>
+                            </td>
+                            <td>
+                                <span className={styles.statusBadge}>PROCESSED</span>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {events.map((event) => (
-                            <tr key={event.id}>
-                                <td className={styles.time}>
-                                    {new Date(event.created_at).toLocaleString()}
-                                </td>
-                                <td>
-                                    <span className={styles.channelTag} data-channel={event.channel}>
-                                        {event.channel.toUpperCase()}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span className={styles.snippet}>
-                                        {event.summary_text || event.snippet_text || 'No description available'}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span className={styles.statusBadge}>PROCESSED</span>
-                                </td>
-                            </tr>
-                        ))}
-                        {events.length === 0 && !loading && (
-                            <tr>
-                                <td colSpan={4} className={styles.empty}>
-                                    No inbound logs found. {filterChannel ? `No logs for ${filterChannel}.` : ''}
-                                </td>
-                            </tr>
-                        )}
-                        {loading && (
-                            <tr>
-                                <td colSpan={4} className={styles.empty}>Loading logs...</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                    ))}
+                    {events.length === 0 && !loading && (
+                        <tr>
+                            <td colSpan={4} className={styles.empty}>
+                                No inbound logs found. {filterChannel ? `No logs for ${filterChannel}.` : ''}
+                            </td>
+                        </tr>
+                    )}
+                    {loading && (
+                        <tr>
+                            <td colSpan={4} className={styles.empty}>Loading logs...</td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
         </div>
     );
 }
 
 export default function InboundLogsPage() {
     return (
-        <Suspense fallback={<div className={styles.container}><p>Loading...</p></div>}>
+        <Suspense fallback={<div><p>Loading logs table...</p></div>}>
             <LogsContent />
         </Suspense>
     );

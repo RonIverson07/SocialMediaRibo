@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import styles from './integrations.module.css';
 import { supabase } from '@/lib/supabase';
 
@@ -11,8 +12,9 @@ const INITIAL_INTEGRATIONS = [
     { id: 'wordpress', name: 'WordPress Plugin', status: 'Connected', lastEvent: '-', icon: 'WP' },
 ];
 
-export default function IntegrationsDashboard() {
-    const [activeTab, setActiveTab] = useState('all');
+function IntegrationsContent() {
+    const searchParams = useSearchParams();
+    const filter = searchParams.get('filter');
     const [integrations, setIntegrations] = useState(INITIAL_INTEGRATIONS);
 
     useEffect(() => {
@@ -36,67 +38,47 @@ export default function IntegrationsDashboard() {
         fetchLastEvents();
     }, []);
 
+    const displayedIntegrations = filter === 'active'
+        ? integrations.filter(i => i.status === 'Connected')
+        : integrations;
+
     return (
-        <div className={styles.container}>
-            <header className={styles.header}>
-                <div>
-                    <h1>Integrations Dashboard</h1>
-                    <p>Connect and configure your omnichannel lead sources.</p>
-                </div>
-                <button className="btn btn-primary">Add New Channel</button>
-            </header>
-
-            <div className={styles.tabs}>
-                <button
-                    className={activeTab === 'all' ? styles.activeTab : ''}
-                    onClick={() => setActiveTab('all')}
-                >
-                    All Channels
-                </button>
-                <button
-                    className={activeTab === 'active' ? styles.activeTab : ''}
-                    onClick={() => setActiveTab('active')}
-                >
-                    Active
-                </button>
-                <a
-                    href="/dashboard/integrations/logs"
-                    className={activeTab === 'logs' ? styles.activeTab : ''}
-                    style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}
-                >
-                    Inbound Logs
-                </a>
-            </div>
-
-            <div className={styles.grid}>
-                {integrations.map((integration: any) => (
-                    <div key={integration.id} className="ribo-card">
-                        <div className={styles.cardHeader}>
-                            <div className={styles.icon}>{integration.icon}</div>
-                            <div className={styles.badge} data-status={integration.status.toLowerCase()}>
-                                {integration.status}
-                            </div>
-                        </div>
-                        <h3 className={styles.cardTitle}>{integration.name}</h3>
-                        <div className={styles.cardMeta}>
-                            <span>Last inbound: {integration.lastEvent}</span>
-                        </div>
-                        <div className={styles.actions}>
-                            {integration.status === 'Connected' ? (
-                                <button className="btn btn-secondary" style={{ color: '#ef4444' }}>Disconnect</button>
-                            ) : (
-                                <button className="btn btn-primary">Connect</button>
-                            )}
-                            <a href={`/dashboard/integrations/mapping?type=${integration.id}`} className="btn btn-secondary">Configure</a>
-                        </div>
-                        <div className={styles.secondaryActions}>
-                            <a href="/dashboard/settings/ai">AI Settings</a>
-                            <span>•</span>
-                            <a href={`/dashboard/integrations/logs?type=${integration.id}`}>View Logs</a>
+        <div className={styles.grid}>
+            {displayedIntegrations.map((integration: any) => (
+                <div key={integration.id} className="ribo-card">
+                    <div className={styles.cardHeader}>
+                        <div className={styles.icon}>{integration.icon}</div>
+                        <div className={styles.badge} data-status={integration.status.toLowerCase()}>
+                            {integration.status}
                         </div>
                     </div>
-                ))}
-            </div>
+                    <h3 className={styles.cardTitle}>{integration.name}</h3>
+                    <div className={styles.cardMeta}>
+                        <span>Last inbound: {integration.lastEvent}</span>
+                    </div>
+                    <div className={styles.actions}>
+                        {integration.status === 'Connected' ? (
+                            <button className="btn btn-secondary" style={{ color: '#ef4444' }}>Disconnect</button>
+                        ) : (
+                            <button className="btn btn-primary">Connect</button>
+                        )}
+                        <a href={`/dashboard/integrations/mapping?type=${integration.id}`} className="btn btn-secondary">Configure</a>
+                    </div>
+                    <div className={styles.secondaryActions}>
+                        <a href="/dashboard/settings/ai">AI Settings</a>
+                        <span>•</span>
+                        <a href={`/dashboard/integrations/logs?type=${integration.id}`}>View Logs</a>
+                    </div>
+                </div>
+            ))}
         </div>
+    );
+}
+
+export default function IntegrationsDashboard() {
+    return (
+        <Suspense fallback={<div><p>Loading dashboard...</p></div>}>
+            <IntegrationsContent />
+        </Suspense>
     );
 }
