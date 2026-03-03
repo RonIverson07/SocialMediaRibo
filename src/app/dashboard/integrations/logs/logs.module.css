@@ -1,0 +1,104 @@
+.container {
+    padding: 3rem 2.5rem;
+    max-width: 1300px;
+    margin: 0 auto;
+    background-color: #ffffff;
+}
+
+.header {
+    margin-bottom: 2rem;
+}
+
+.header h1 {
+    font-size: 2.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.header p {
+    font-size: 1.15rem;
+    color: var(--muted-foreground);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th {
+    text-align: left;
+    padding: 1.25rem 1.5rem;
+    color: #999999;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid var(--border);
+}
+
+.table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f9f9f9;
+    font-size: 0.95rem;
+    color: #333333;
+}
+
+.channelTag {
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 0.25rem 0.65rem;
+    border-radius: 4px;
+    background: #f0f0f0;
+    color: #666666;
+    text-transform: uppercase;
+}
+
+.channelTag[data-channel="fb_lead_ads"] {
+    background: #E7F3FF;
+    color: #1877F2;
+}
+
+.channelTag[data-channel="messenger"] {
+    background: #F0F2F5;
+    color: #0084FF;
+}
+
+.channelTag[data-channel="whatsapp"] {
+    background: #E7FCEF;
+    color: #25D366;
+}
+
+.channelTag[data-channel="wordpress"] {
+    background: #F0F6FB;
+    color: #21759B;
+}
+
+.snippet {
+    display: block;
+    max-width: 400px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #666666;
+    font-family: inherit;
+}
+
+.time {
+    font-weight: 600;
+    color: #999999;
+    font-size: 0.85rem;
+}
+
+.statusBadge {
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    background: #EBF8FF;
+    color: #0010B3;
+}
+
+.empty {
+    text-align: center;
+    padding: 5rem !important;
+    color: #cccccc;
+    font-style: italic;
+}

@@ -1,0 +1,160 @@
+.container {
+    padding: 3rem 2.5rem;
+    max-width: 1300px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.header h1 {
+    font-size: 2.25rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+}
+
+.description {
+    margin-bottom: 4rem;
+    font-size: 1.15rem;
+    color: var(--muted-foreground);
+    font-weight: 500;
+}
+
+.settingRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 0;
+    border-bottom: 2px solid var(--border);
+}
+
+.info {
+    flex: 1;
+}
+
+.info strong {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: #000000;
+}
+
+.info span {
+    font-size: 0.95rem;
+    color: #555555;
+    font-weight: 500;
+}
+
+.control {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    width: 450px;
+}
+
+.control input[type="range"] {
+    flex: 1;
+    accent-color: var(--primary);
+    height: 6px;
+    background: #E5E7EB;
+    border-radius: 100px;
+}
+
+.value {
+    font-weight: 900;
+    font-size: 1.1rem;
+    min-width: 60px;
+    text-align: right;
+    color: var(--primary);
+}
+
+.mappingList {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.mappingRow {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.mappingRow span {
+    min-width: 150px;
+    color: #000000;
+}
+
+.mappingRow strong {
+    color: var(--muted-foreground);
+}
+
+.select {
+    flex: 1;
+    padding: 1.25rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--background);
+    color: var(--foreground);
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.toggleRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.toggleRow strong {
+    font-size: 1.25rem;
+    font-weight: 900;
+}
+
+.toggleRow p {
+    font-size: 0.95rem;
+    color: #555555;
+}
+
+/* Custom Checkbox Toggle mirroring Tecnologia style */
+.toggle {
+    width: 60px;
+    height: 30px;
+    border-radius: 20px;
+    appearance: none;
+    background: #E5E7EB;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.toggle:checked {
+    background: var(--primary);
+}
+
+.toggle::before {
+    content: '';
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    top: 4px;
+    left: 4px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toggle:checked::before {
+    left: 34px;
+}

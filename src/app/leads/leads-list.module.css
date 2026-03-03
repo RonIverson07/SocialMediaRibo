@@ -1,0 +1,105 @@
+.container {
+    padding: 2.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background-color: #ffffff;
+    background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2.5rem;
+}
+
+.header h1 {
+    font-size: 2.25rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: #000000;
+}
+
+.header p {
+    color: #666666;
+    font-size: 1rem;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th {
+    text-align: left;
+    padding: 1rem;
+    color: #999999;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.table td {
+    padding: 1.5rem 1rem;
+    border-bottom: 1px solid #f9f9f9;
+    color: #333333;
+}
+
+.contactInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.contactInfo strong {
+    color: #000000;
+    font-size: 1rem;
+}
+
+.contactInfo span {
+    font-size: 0.85rem;
+    color: #888888;
+}
+
+.sourceTag {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    background: #f5f5f5;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    color: #0010B3;
+}
+
+.stageIndicator {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    background: #E0F2FF;
+    color: #0085FF;
+    border: 1px solid #CCE5FF;
+}
+
+.stageIndicator[data-stage="stage_qualified"] {
+    background: #E2FBE9;
+    color: #10B981;
+    border-color: #D1FAE5;
+}
+
+.card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 2.5rem;
+    overflow-x: auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+.empty {
+    text-align: center;
+    padding: 4rem !important;
+    color: #cccccc;
+    font-style: italic;
+}

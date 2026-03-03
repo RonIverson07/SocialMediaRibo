@@ -1,0 +1,260 @@
+.container {
+    padding: 3rem 2.5rem;
+    max-width: 1300px;
+    margin: 0 auto;
+    background-color: #ffffff;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid #eeeeee;
+}
+
+.profile {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+}
+
+.avatar {
+    width: 90px;
+    height: 90px;
+    background-color: #0010B3;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 900;
+    color: white;
+    box-shadow: 0 16px 32px rgba(0, 16, 179, 0.1);
+}
+
+.profile h1 {
+    font-size: 2.25rem;
+    margin-bottom: 0.25rem;
+    color: #000000;
+}
+
+.profile p {
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: #666666;
+    margin-bottom: 0px;
+}
+
+.badge {
+    background: #EBF8FF;
+    color: #0010B3;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 1px solid rgba(0, 16, 179, 0.1);
+}
+
+.mainGrid {
+    display: grid;
+    grid-template-columns: 1.5fr 400px;
+    gap: 3rem;
+}
+
+.timelineSection h2 {
+    font-size: 1.75rem;
+    margin-bottom: 2rem;
+    color: #000000;
+}
+
+.timeline {
+    display: flex;
+    flex-direction: column;
+}
+
+.timelineItem {
+    position: relative;
+    padding-bottom: 4rem;
+    padding-left: 3.5rem;
+    border-left: 3px solid #eeeeee;
+}
+
+.timelineItem:last-child {
+    border-left-color: transparent;
+}
+
+.timelineDot {
+    position: absolute;
+    left: -11px;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border: 4px solid #dddddd;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.timelineItem[data-type="lead_event"] .timelineDot {
+    border-color: #0010B3;
+}
+
+.eventHeader {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    align-items: baseline;
+}
+
+.eventHeader strong {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #000000;
+}
+
+.time {
+    font-size: 0.85rem;
+    color: #999999;
+    font-weight: 700;
+}
+
+.summary {
+    font-size: 1.05rem;
+    margin-bottom: 1.5rem;
+    color: #444444;
+}
+
+.aiResult {
+    background-color: #f9fafb;
+    border: 1px solid #eeeeee;
+    border-radius: 20px;
+    padding: 2rem;
+    margin-top: 1.5rem;
+}
+
+.confidenceBar {
+    height: 6px;
+    background: #E5E7EB;
+    border-radius: 100px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.confidenceProgress {
+    height: 100%;
+    background-color: #0010B3;
+    border-radius: 100px;
+}
+
+.confidenceText {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #0010B3;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.reasons li {
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+    color: #4B5563;
+    font-weight: 500;
+}
+
+.sidebar h3 {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    color: #000000;
+}
+
+.infoRow {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    color: #333333;
+}
+
+.infoRow span {
+    color: #666666;
+    font-weight: 600;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid #eeeeee;
+    margin: 2.5rem 0;
+}
+
+@media (max-width: 1024px) {
+    .mainGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Modal Styles */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal {
+    background: white;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 20px;
+    padding: 3rem;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+}
+
+.modal h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+}
+
+.formGroup {
+    margin-bottom: 2rem;
+}
+
+.formGroup label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 800;
+    margin-bottom: 0.75rem;
+    color: #000000;
+}
+
+.input {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid #eeeeee;
+    background: #f9fafb;
+    font-size: 1rem;
+    font-weight: 500;
+    outline: none;
+}
+
+.input:focus {
+    border-color: #0010B3;
+    background: white;
+}
+
+.modalActions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 3rem;
+}
