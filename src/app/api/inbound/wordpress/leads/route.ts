@@ -8,7 +8,8 @@ export async function POST(req: NextRequest) {
         const domain = req.headers.get("x-wp-domain");
 
         // 1. API Key & Domain Validation (Spec 3.D)
-        if (!authHeader || !authHeader.startsWith("Bearer RIBO_WP_")) {
+        const expectedHeader = `Bearer ${process.env.RIBO_WP_API_KEY || 'RIBO_WP_DEV_SECRET'}`;
+        if (!authHeader || authHeader !== expectedHeader) {
             return NextResponse.json({ error: "Unauthorized: Invalid API Key" }, { status: 401 });
         }
 

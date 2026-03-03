@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { LeadService } from "@/services/lead.service";
 import { AIService } from "@/services/ai.service";
+import { verifyMetaSignature } from "@/lib/meta-security";
 
 // Verification for Meta Webhooks (Spec 5.4)
 export async function GET(req: NextRequest) {
@@ -17,10 +18,18 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     try {
-        const payload = await req.json();
+        const rawBody = await req.text();
+        const signature = req.headers.get("x-hub-signature-256");
 
-        // 1. Webhook Signature Verification (Spec 5.4 - Placeholder for production)
-        // In a real Meta integration, you'd verify the X-Hub-Signature-256 header.
+        // 1. Webhook Signature Verification (Spec 5.4)
+        if (process.env.NODE_ENV === 'production' || process.env.FB_APP_SECRET) {
+            const isValid = verifyMetaSignature(rawBody, signature, process.env.FB_APP_SECRET);
+            if (!isValid) {
+                return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+            }
+        }
+
+        const payload = JSON.parse(rawBody);
 
         // 2. Identify Event Type
         // Meta sends leadgen events in a specific nested format

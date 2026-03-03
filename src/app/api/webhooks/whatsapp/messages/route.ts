@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { LeadService } from "@/services/lead.service";
 import { AIService } from "@/services/ai.service";
+import { verifyMetaSignature } from "@/lib/meta-security";
 
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
@@ -12,7 +13,16 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     try {
-        const payload = await req.json();
+        const rawBody = await req.text();
+        const signature = req.headers.get("x-hub-signature-256");
+
+        // Webhook Signature Verification (Spec 5.4)
+        if (process.env.NODE_ENV === 'production' || process.env.FB_APP_SECRET) {
+            const isValid = verifyMetaSignature(rawBody, signature, process.env.FB_APP_SECRET);
+            if (!isValid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const payload = JSON.parse(rawBody);
 
         // 1. WhatsApp Webhook Processing (Spec 3.C)
         const value = payload.entry?.[0]?.changes?.[0]?.value;

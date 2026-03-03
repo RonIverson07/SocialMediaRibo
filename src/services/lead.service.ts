@@ -208,4 +208,19 @@ export class LeadService {
                 metadata_json: metadata
             });
     }
+
+    /**
+     * enrichment logic for Facebook Lead Ads (Spec 3.A)
+     * In production, this would use the META_PAGE_ACCESS_TOKEN 
+     * to fetch the actual user fields from the Graph API.
+     */
+    private static async enrichLeadAdData(leadId: string): Promise<any> {
+        console.log(`[LeadService] Enriching data for LeadID: ${leadId} via Meta Graph API...`);
+
+        // This is where the GRAPH API call happens:
+        // const response = await fetch(`https://graph.facebook.com/v19.0/${leadId}?access_token=${process.env.META_PAGE_ACCESS_TOKEN}`);
+        // return await response.json();
+
+        return null; // For now return null to use provided webhook payload
+    }
 }
