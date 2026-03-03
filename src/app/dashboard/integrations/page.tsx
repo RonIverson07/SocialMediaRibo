@@ -17,7 +17,7 @@ function IntegrationsContent() {
     const filter = searchParams.get('filter');
     const [integrations, setIntegrations] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [modalConfig, setModalConfig] = useState<{ show: boolean, id: string | null, type: 'connect' | 'disconnect' | null }>({
+    const [modalConfig, setModalConfig] = useState<{ show: boolean, id: string | null, type: 'connect' | 'disconnect' | 'delete' | null }>({
         show: false,
         id: null,
         type: null
@@ -101,11 +101,38 @@ function IntegrationsContent() {
         });
     };
 
-    const confirmToggle = () => {
-        if (modalConfig.id && modalConfig.type) {
-            updateStatus(modalConfig.id, modalConfig.type === 'connect');
-            setModalConfig({ show: false, id: null, type: null });
+    const handleDelete = (id: string) => {
+        setModalConfig({
+            show: true,
+            id,
+            type: 'delete'
+        });
+    };
+
+    const confirmToggle = async () => {
+        if (!modalConfig.id || !modalConfig.type) return;
+
+        if (modalConfig.type === 'delete') {
+            const previousIntegrations = [...integrations];
+            setIntegrations(prev => prev.filter(i => i.id !== modalConfig.id));
+
+            try {
+                const { error } = await supabase
+                    .from('integrations')
+                    .delete()
+                    .eq('id', modalConfig.id);
+
+                if (error) throw error;
+            } catch (err: any) {
+                console.error('Failed to delete integration:', err);
+                alert(`❌ Failed to delete: ${err.message}`);
+                setIntegrations(previousIntegrations);
+            }
+        } else {
+            await updateStatus(modalConfig.id, modalConfig.type === 'connect');
         }
+
+        setModalConfig({ show: false, id: null, type: null });
     };
 
     const displayedIntegrations = filter === 'active'
@@ -117,7 +144,7 @@ function IntegrationsContent() {
     return (
         <div className={styles.grid}>
             {displayedIntegrations.map((integration: any) => (
-                <div key={integration.id} className="ribo-card">
+                <div key={integration.id} className={`${styles.card} ribo-card`}>
                     <div className={styles.cardHeader}>
                         <div className={styles.icon}>{integration.icon}</div>
                         <div className={styles.badge} data-status={integration.status?.toLowerCase()}>
@@ -151,6 +178,15 @@ function IntegrationsContent() {
                         <a href="/dashboard/settings/ai">AI Settings</a>
                         <span>•</span>
                         <a href={`/dashboard/integrations/logs?type=${integration.id}`}>View Logs</a>
+
+                        {/* Trash Button aligned to the right */}
+                        <button
+                            className={styles.deleteBtn}
+                            onClick={() => handleDelete(integration.id)}
+                            title="Delete Integration"
+                        >
+                            🗑️
+                        </button>
                     </div>
                 </div>
             ))}
@@ -166,13 +202,15 @@ function IntegrationsContent() {
                                 color: modalConfig.type === 'connect' ? '#059669' : '#DC2626'
                             }}
                         >
-                            {modalConfig.type === 'connect' ? '🔌' : '⚠️'}
+                            {modalConfig.type === 'connect' ? '🔌' : modalConfig.type === 'delete' ? '🗑️' : '⚠️'}
                         </div>
-                        <h2>{modalConfig.type === 'connect' ? 'Connect' : 'Disconnect'} {modalConfig.id?.replace(/_/g, ' ').toUpperCase()}?</h2>
+                        <h2>{modalConfig.type === 'connect' ? 'Connect' : modalConfig.type === 'delete' ? 'Delete' : 'Disconnect'} {modalConfig.id?.replace(/_/g, ' ').toUpperCase()}?</h2>
                         <p>
                             {modalConfig.type === 'connect'
                                 ? `Are you sure you want to activate this channel? You will start receiving leads and processing data from this source.`
-                                : `Are you sure you want to disconnect this channel? You will stop receiving and processing new leads from this source immediately.`
+                                : modalConfig.type === 'delete'
+                                    ? `Are you sure you want to PERMANENTLY remove this integration? This will delete the channel and its configuration from your dashboard.`
+                                    : `Are you sure you want to disconnect this channel? You will stop receiving and processing new leads from this source immediately.`
                             }
                         </p>
                         <div className={styles.modalActions}>
@@ -182,7 +220,7 @@ function IntegrationsContent() {
                                 style={{ background: modalConfig.type === 'connect' ? 'var(--primary)' : '#DC2626' }}
                                 onClick={confirmToggle}
                             >
-                                {modalConfig.type === 'connect' ? 'Confirm Connection' : 'Confirm Disconnect'}
+                                {modalConfig.type === 'connect' ? 'Confirm Connection' : modalConfig.type === 'delete' ? 'Confirm Delete' : 'Confirm Disconnect'}
                             </button>
                         </div>
                     </div>

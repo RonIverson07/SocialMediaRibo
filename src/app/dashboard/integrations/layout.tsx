@@ -4,6 +4,7 @@ import React, { Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from './integrations.module.css';
+import { supabase } from '@/lib/supabase';
 
 function IntegrationsTabs() {
     const pathname = usePathname();
@@ -45,6 +46,41 @@ function IntegrationsTabs() {
 }
 
 export default function IntegrationsLayout({ children }: { children: React.ReactNode }) {
+    const [showAddModal, setShowAddModal] = React.useState(false);
+    const [addingId, setAddingId] = React.useState<string | null>(null);
+
+    const availableChannels = [
+        { id: 'insta', name: 'Instagram DM', icon: 'IG' },
+        { id: 'linkedin', name: 'LinkedIn Leads', icon: 'LI' },
+        { id: 'telegram', name: 'Telegram Bot', icon: 'TG' },
+        { id: 'custom', name: 'Custom Webhook', icon: '{}' },
+    ];
+
+    const handleSelectChannel = async (channel: any) => {
+        setAddingId(channel.id);
+        try {
+            const { error } = await supabase
+                .from('integrations')
+                .upsert({
+                    id: channel.id,
+                    name: channel.name,
+                    icon: channel.icon,
+                    status: 'Disconnected',
+                    updated_at: new Date().toISOString()
+                });
+
+            if (error) throw error;
+
+            setShowAddModal(false);
+            window.location.reload(); // Refresh to see new channel in the grid
+        } catch (err: any) {
+            console.error('Failed to add channel:', err);
+            alert(`Failed to add ${channel.name}: ${err.message || 'Unknown error'}`);
+        } finally {
+            setAddingId(null);
+        }
+    };
+
     return (
         <div className={styles.container}>
             <header className={styles.header}>
@@ -52,7 +88,12 @@ export default function IntegrationsLayout({ children }: { children: React.React
                     <h1>Integrations Dashboard</h1>
                     <p>Connect and configure your omnichannel lead sources.</p>
                 </div>
-                <button className="btn btn-primary">Add New Channel</button>
+                <button
+                    className="btn btn-primary"
+                    onClick={() => setShowAddModal(true)}
+                >
+                    Add New Channel
+                </button>
             </header>
 
             <Suspense fallback={<div className={styles.tabs}>Loading tabs...</div>}>
@@ -60,6 +101,37 @@ export default function IntegrationsLayout({ children }: { children: React.React
             </Suspense>
 
             {children}
+
+            {/* Selection Modal for New Channel */}
+            {showAddModal && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modal} style={{ maxWidth: '600px' }}>
+                        <div className={styles.modalIcon} style={{ background: '#EEF2FF', color: 'var(--primary)' }}>
+                            ✨
+                        </div>
+                        <h2>Add New Lead Source</h2>
+                        <p>Select a platform to start receiving and classifying leads automatically.</p>
+
+                        <div className={styles.channelSelectionGrid}>
+                            {availableChannels.map(channel => (
+                                <div
+                                    key={channel.id}
+                                    className={styles.selectableChannel}
+                                    style={{ opacity: addingId === channel.id ? 0.6 : 1, pointerEvents: addingId ? 'none' : 'auto' }}
+                                    onClick={() => handleSelectChannel(channel)}
+                                >
+                                    <div className={styles.channelIcon}>{channel.icon}</div>
+                                    <span>{addingId === channel.id ? 'Adding...' : channel.name}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className={styles.modalActions} style={{ marginTop: '2rem' }}>
+                            <button className="btn btn-secondary" onClick={() => setShowAddModal(false)} disabled={!!addingId}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
