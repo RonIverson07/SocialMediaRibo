@@ -8,8 +8,20 @@ export class AIService {
      */
     static async classifyLeadEvent(event: { id: string, lead_id: string, snippet_text?: string, channel: string }) {
         try {
-            // 1. Fetch AI Settings & Mapping from DB
-            const { data: settings } = await supabase.from('ai_settings').select('*').eq('id', 'default').maybeSingle();
+            // 1. Fetch AI Settings & Mapping from DB (Spec 7: Per-channel)
+            const { data: channelSettings } = await supabase
+                .from('ai_settings')
+                .select('*')
+                .eq('channel', event.channel)
+                .maybeSingle();
+
+            const { data: globalSettings } = await supabase
+                .from('ai_settings')
+                .select('*')
+                .eq('channel', 'global')
+                .maybeSingle();
+
+            const settings = channelSettings || globalSettings;
 
             // Fetch custom stage mapping for this channel (Spec 2.2.C)
             const { data: customMappings } = await supabase

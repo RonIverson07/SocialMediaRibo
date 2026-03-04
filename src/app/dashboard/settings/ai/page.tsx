@@ -1,13 +1,36 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import styles from './ai-settings.module.css';
 import { supabase } from '@/lib/supabase';
+import { useSearchParams } from 'next/navigation';
 
-export default function AISettingsPage() {
+const AI_LABELS = [
+    'High Intent', 'Urgent Inquiry', 'Information Request', 'Spam/Bot', 'Customer Support'
+];
+
+const PIPELINE_STAGES = [
+    { id: 'stage_discovery', name: 'Stage: Discovery' },
+    { id: 'stage_negotiation', name: 'Stage: Negotiation' },
+    { id: 'stage_qualified', name: 'Stage: Qualified' },
+    { id: 'stage_high_priority', name: 'Stage: High Priority' },
+    { id: 'stage_closed_won', name: 'Stage: Closed Won' },
+    { id: 'stage_closed_lost', name: 'Stage: Closed Lost' }
+];
+
+interface StageMapping {
+    ai_label: string;
+    stage_id: string;
+}
+
+function AISettingsContent() {
+    const searchParams = useSearchParams();
+    const channel = searchParams.get('channel') || 'global';
+
     const [showSuggestion, setShowSuggestion] = useState(40);
     const [autoApply, setAutoApply] = useState(85);
     const [captureSnippet, setCaptureSnippet] = useState(false);
+    const [stageMappings, setStageMappings] = useState<StageMapping[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [modal, setModal] = useState<{ show: boolean, title: string, message: string, type: 'success' | 'error' }>({
@@ -21,19 +44,48 @@ export default function AISettingsPage() {
         async function fetchSettings() {
             setLoading(true);
             try {
+                // 1. Fetch Thresholds
                 const { data, error } = await supabase
                     .from('ai_settings')
                     .select('*')
-                    .eq('id', 'default')
-                    .single();
+                    .eq('channel', channel)
+                    .maybeSingle();
 
                 if (error && error.code !== 'PGRST116') throw error;
 
                 if (data) {
-                    setShowSuggestion(data.show_suggestion_threshold);
-                    setAutoApply(data.auto_apply_threshold);
-                    setCaptureSnippet(data.capture_message_snippet);
+                    setShowSuggestion(data.show_suggestion_threshold || 40);
+                    setAutoApply(data.auto_apply_threshold || 85);
+                    setCaptureSnippet(data.capture_message_snippet ?? false);
+                } else if (channel !== 'global') {
+                    const { data: globalData } = await supabase
+                        .from('ai_settings')
+                        .select('*')
+                        .eq('channel', 'global')
+                        .maybeSingle();
+
+                    if (globalData) {
+                        setShowSuggestion(globalData.show_suggestion_threshold || 40);
+                        setAutoApply(globalData.auto_apply_threshold || 85);
+                        setCaptureSnippet(globalData.capture_message_snippet ?? false);
+                    }
                 }
+
+                // 2. Fetch Stage Mappings (Spec 2.2.C)
+                const { data: stageData } = await supabase
+                    .from('integration_mappings')
+                    .select('external_field, crm_field')
+                    .eq('integration_id', `ai_stage_${channel}`);
+
+                const initialStages = AI_LABELS.map(label => {
+                    const existing = stageData?.find(s => s.external_field === label);
+                    return {
+                        ai_label: label,
+                        stage_id: existing?.crm_field || (label === 'High Intent' ? 'stage_qualified' : label === 'Urgent Inquiry' ? 'stage_high_priority' : 'stage_discovery')
+                    };
+                });
+                setStageMappings(initialStages);
+
             } catch (err) {
                 console.error('Error loading AI settings:', err);
             } finally {
@@ -41,27 +93,39 @@ export default function AISettingsPage() {
             }
         }
         fetchSettings();
-    }, []);
+    }, [channel]);
 
     const handleSave = async () => {
         setSaving(true);
         try {
-            const { error } = await supabase
+            // 1. Update AI Settings Table
+            const { error: settingsError } = await supabase
                 .from('ai_settings')
                 .upsert({
-                    id: 'default',
+                    channel: channel,
                     show_suggestion_threshold: showSuggestion,
                     auto_apply_threshold: autoApply,
                     capture_message_snippet: captureSnippet,
                     updated_at: new Date().toISOString()
-                });
+                }, { onConflict: 'channel' });
 
-            if (error) throw error;
+            if (settingsError) throw settingsError;
+
+            // 2. Update Stage Mappings (Spec 2.2.C)
+            const stageUpsert = stageMappings.map(row => ({
+                integration_id: `ai_stage_${channel}`,
+                external_field: row.ai_label,
+                crm_field: row.stage_id,
+            }));
+
+            await supabase.from('integration_mappings').delete().eq('integration_id', `ai_stage_${channel}`);
+            const { error: mappingError } = await supabase.from('integration_mappings').insert(stageUpsert);
+            if (mappingError) throw mappingError;
 
             setModal({
                 show: true,
                 title: 'Settings Saved',
-                message: 'Your AI classification thresholds and privacy settings have been updated successfully.',
+                message: `AI configuration for ${channel.toUpperCase()} has been updated successfully.`,
                 type: 'success'
             });
         } catch (err: any) {
@@ -79,12 +143,15 @@ export default function AISettingsPage() {
 
     if (loading) return <div className={styles.container}><p>Loading your AI configuration...</p></div>;
 
+    const channelDisplay = channel === 'global' ? 'Global Default' : channel.toUpperCase().replace(/_/g, ' ');
+
     return (
         <div className={styles.container}>
             <header className={styles.header}>
                 <div>
-                    <h1>AI Classification Settings</h1>
-                    <p>Configure how AI processes and suggests lead stages.</p>
+                    <div className={styles.breadcrumb}>Settings • AI Classification</div>
+                    <h1>AI Settings: {channelDisplay}</h1>
+                    <p>Configure how AI processes and suggests lead stages for this channel.</p>
                 </div>
                 <button
                     className="btn btn-primary"
@@ -133,25 +200,31 @@ export default function AISettingsPage() {
 
                 <section className="ribo-card">
                     <h3>Stage Mapping</h3>
-                    <p className={styles.description}>Map AI classification labels to your CRM stages.</p>
+                    <p className={styles.description}>Map AI classification labels to your CRM stages for {channelDisplay}.</p>
 
                     <div className={styles.mappingList}>
-                        <div className={styles.mappingRow}>
-                            <span>AI: "Qualified"</span>
-                            <strong>→</strong>
-                            <select className={styles.select} defaultValue="Stage: Qualified">
-                                <option>Stage: Qualified</option>
-                                <option>Stage: Discovery</option>
-                            </select>
-                        </div>
-                        <div className={styles.mappingRow}>
-                            <span>AI: "Urgent Inquiry"</span>
-                            <strong>→</strong>
-                            <select className={styles.select} defaultValue="Stage: High Priority">
-                                <option>Stage: High Priority</option>
-                                <option>Stage: Qualified</option>
-                            </select>
-                        </div>
+                        {stageMappings.map((row, index) => (
+                            <div key={row.ai_label} className={styles.mappingRow}>
+                                <span>AI: "{row.ai_label}"</span>
+                                <strong>→</strong>
+                                <select
+                                    className={styles.select}
+                                    value={row.stage_id}
+                                    onChange={(e) => {
+                                        const next = [...stageMappings];
+                                        next[index].stage_id = e.target.value;
+                                        setStageMappings(next);
+                                    }}
+                                >
+                                    {PIPELINE_STAGES.map(s => (
+                                        <option key={s.id} value={s.id}>{s.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        ))}
+                    </div>
+                    <div className={styles.infoMuted} style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#6b7280' }}>
+                        💡 Individual label-to-stage mapping can also be customized in the "Configure" Field Mapping screen.
                     </div>
                 </section>
 
@@ -200,5 +273,13 @@ export default function AISettingsPage() {
                 </div>
             )}
         </div>
+    );
+}
+
+export default function AISettingsPage() {
+    return (
+        <Suspense fallback={<div className={styles.container}><p>Loading AI settings...</p></div>}>
+            <AISettingsContent />
+        </Suspense>
     );
 }

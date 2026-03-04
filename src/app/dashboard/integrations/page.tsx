@@ -220,7 +220,7 @@ function IntegrationsContent() {
                         )}
                     </div>
                     <div className={styles.secondaryActions}>
-                        <a href="/dashboard/settings/ai">AI Settings</a>
+                        <a href={`/dashboard/settings/ai?channel=${integration.id}`}>AI Settings</a>
                         <span>•</span>
                         <a href={`/dashboard/integrations/logs?type=${integration.id}`}>View Logs</a>
 

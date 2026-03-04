@@ -75,11 +75,20 @@ function MappingContent() {
                 ]);
             }
 
-            // 2. Fetch Stage Mapping (Placeholder labels)
-            setStageMapping(AI_LABELS.map(label => ({
-                ai_label: label,
-                stage_id: 'stage_discovery'
-            })));
+            // 2. Fetch Stage Mapping (Spec 2.2.C)
+            const { data: stageData } = await supabase
+                .from('integration_mappings')
+                .select('external_field, crm_field')
+                .eq('integration_id', `ai_stage_${integrationId}`);
+
+            const initialStages = AI_LABELS.map(label => {
+                const existing = stageData?.find(s => s.external_field === label);
+                return {
+                    ai_label: label,
+                    stage_id: existing?.crm_field || 'stage_discovery'
+                };
+            });
+            setStageMapping(initialStages);
 
             setLoading(false);
         }

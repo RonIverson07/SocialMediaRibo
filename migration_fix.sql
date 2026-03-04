@@ -50,3 +50,19 @@ CREATE TABLE IF NOT EXISTS ai_classification_results (
   model_version TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Ensure ai_settings exists (Per-channel AI configuration)
+CREATE TABLE IF NOT EXISTS ai_settings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  channel TEXT NOT NULL UNIQUE,
+  show_suggestion_threshold FLOAT DEFAULT 40,
+  auto_apply_threshold FLOAT DEFAULT 85,
+  capture_message_snippet BOOLEAN DEFAULT false,
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Insert default global settings if not exists
+INSERT INTO ai_settings (channel, show_suggestion_threshold, auto_apply_threshold, capture_message_snippet)
+VALUES ('global', 40, 85, false)
+ON CONFLICT (channel) DO NOTHING;

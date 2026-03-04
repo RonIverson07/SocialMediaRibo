@@ -24,14 +24,20 @@ export class LeadService {
             return { event: existingEvent, isDuplicate: true };
         }
 
-        // 1. Fetch AI Settings for Privacy Toggle (Spec 7)
-        const { data: aiSettings } = await supabase
+        // 1. Fetch AI Settings for Privacy Toggle (Spec 7: Per-channel)
+        const { data: channelSettings } = await supabase
             .from('ai_settings')
             .select('capture_message_snippet')
-            .eq('id', 'default')
+            .eq('channel', params.source)
             .maybeSingle();
 
-        const shouldCaptureSnippet = aiSettings?.capture_message_snippet || false;
+        const { data: globalSettings } = await supabase
+            .from('ai_settings')
+            .select('capture_message_snippet')
+            .eq('channel', 'global')
+            .maybeSingle();
+
+        const shouldCaptureSnippet = (channelSettings || globalSettings)?.capture_message_snippet ?? false;
 
         // 2. Match/Resolve Contact (with Conflict Detection - Spec 3.C)
         const { contact, hasConflict } = await this.resolveContact(params);

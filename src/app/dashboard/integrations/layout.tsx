@@ -46,6 +46,8 @@ function IntegrationsTabs() {
 }
 
 export default function IntegrationsLayout({ children }: { children: React.ReactNode }) {
+    const pathname = usePathname();
+    const isMappingPage = pathname.includes('/mapping');
     const [showAddModal, setShowAddModal] = React.useState(false);
     const [addingId, setAddingId] = React.useState<string | null>(null);
 
@@ -83,22 +85,26 @@ export default function IntegrationsLayout({ children }: { children: React.React
 
     return (
         <div className={styles.container}>
-            <header className={styles.header}>
-                <div>
-                    <h1>Integrations Dashboard</h1>
-                    <p>Connect and configure your omnichannel lead sources.</p>
-                </div>
-                <button
-                    className="btn btn-primary"
-                    onClick={() => setShowAddModal(true)}
-                >
-                    Add New Channel
-                </button>
-            </header>
+            {!isMappingPage && (
+                <>
+                    <header className={styles.header}>
+                        <div>
+                            <h1>Integrations Dashboard</h1>
+                            <p>Connect and configure your omnichannel lead sources.</p>
+                        </div>
+                        <button
+                            className="btn btn-primary"
+                            onClick={() => setShowAddModal(true)}
+                        >
+                            Add New Channel
+                        </button>
+                    </header>
 
-            <Suspense fallback={<div className={styles.tabs}>Loading tabs...</div>}>
-                <IntegrationsTabs />
-            </Suspense>
+                    <Suspense fallback={<div className={styles.tabs}>Loading tabs...</div>}>
+                        <IntegrationsTabs />
+                    </Suspense>
+                </>
+            )}
 
             {children}
 
