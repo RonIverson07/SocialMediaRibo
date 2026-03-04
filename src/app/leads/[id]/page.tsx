@@ -74,6 +74,7 @@ export default function LeadDetailsPage({ params }: { params: Promise<{ id: stri
     };
 
     const handleConvert = async () => {
+        if (lead.pipeline_stage_id === 'stage_qualified') return;
         if (!window.confirm('Are you sure you want to convert this lead to a Client?')) return;
 
         // 1. Update Lead Stage
@@ -123,7 +124,7 @@ export default function LeadDetailsPage({ params }: { params: Promise<{ id: stri
             </header>
 
             <div className={styles.mainGrid}>
-                <section className={styles.timelineSection}>
+                <section className={`${styles.timelineSection} ribo-card`}>
                     <h2>Activity Timeline</h2>
                     <div className={styles.timeline}>
                         {timeline.map((event: any) => {
@@ -205,10 +206,11 @@ export default function LeadDetailsPage({ params }: { params: Promise<{ id: stri
                         </button>
                         <button
                             className="btn btn-secondary"
-                            style={{ width: '100%' }}
+                            style={{ width: '100%', opacity: lead.pipeline_stage_id === 'stage_qualified' ? 0.5 : 1 }}
                             onClick={handleConvert}
+                            disabled={lead.pipeline_stage_id === 'stage_qualified'}
                         >
-                            Convert to Client
+                            {lead.pipeline_stage_id === 'stage_qualified' ? 'Converted to Client' : 'Convert to Client'}
                         </button>
                     </div>
                 </aside>

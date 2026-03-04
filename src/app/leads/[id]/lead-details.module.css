@@ -34,6 +34,92 @@
     box-shadow: 0 16px 32px rgba(0, 16, 179, 0.1);
 }
 
+.mainGrid {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 3rem;
+    align-items: stretch;
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar>.ribo-card {
+    flex: 1;
+    height: 100%;
+}
+
+.timelineSection {
+    display: flex;
+    flex-direction: column;
+}
+
+.timelineSection h2 {
+    font-size: 1.5rem;
+    margin-bottom: 2.5rem;
+    color: #000000;
+}
+
+.timeline {
+    position: relative;
+    padding-left: 1.5rem;
+    flex: 1;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 5px;
+    bottom: 0;
+    width: 2px;
+    background: #f1f1f1;
+}
+
+.timelineItem {
+    position: relative;
+    margin-bottom: 3rem;
+}
+
+.timelineItem:last-child {
+    margin-bottom: 0;
+}
+
+.timelineContent {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.eventHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.eventHeader strong {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #666666;
+}
+
+.time {
+    font-size: 0.8rem;
+    color: #aaaaaa;
+    font-weight: 600;
+}
+
+.summary {
+    font-size: 1.05rem;
+    color: #222222;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.4;
+}
+
 .profile h1 {
     font-size: 2.25rem;
     margin-bottom: 0.25rem;

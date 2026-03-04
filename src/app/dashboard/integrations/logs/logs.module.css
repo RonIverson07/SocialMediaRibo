@@ -3,8 +3,116 @@
 }
 
 .header {
-    margin-bottom: 2rem;
-    padding: 2rem 0;
+    margin-bottom: 1rem;
+}
+
+.header h1 {
+    font-size: 2.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.header p {
+    font-size: 1rem;
+    color: #666666;
+    margin: 0;
+}
+
+.searchBar {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    align-items: center;
+}
+
+.sortSelect {
+    padding: 0.55rem 0.85rem;
+    border-radius: 12px;
+    border: 2px solid #eeeeee;
+    background: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #444444;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sortSelect:focus {
+    border-color: #0010B3;
+}
+
+.searchInputWrapper {
+    position: relative;
+    width: 100%;
+    max-width: 350px;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 0.55rem 1rem;
+    padding-left: 2.5rem;
+    border-radius: 12px;
+    border: 2px solid #eeeeee;
+    background: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #000000;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.searchInput:focus {
+    border-color: #0010B3;
+    box-shadow: 0 0 0 4px rgba(0, 16, 179, 0.05);
+}
+
+.searchIcon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999999;
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eeeeee;
+}
+
+.paginationBtn {
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    border: 1px solid #eeeeee;
+    background: white;
+    font-weight: 800;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.paginationBtn:hover:not(:disabled) {
+    background: #f8fafc;
+    border-color: #0010B3;
+    color: #0010B3;
+}
+
+.paginationBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pageInfo {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #666666;
 }
 
 .table {

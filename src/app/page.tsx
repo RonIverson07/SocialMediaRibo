@@ -14,7 +14,7 @@ export default function Home() {
           </p>
           <div className={`${styles.heroActions} animate-up`} style={{ animationDelay: '0.2s' }}>
             <button className="btn btn-primary">Start Strategy Call</button>
-            <button className="btn btn-secondary">Explore Features</button>
+            <a href="#features" className="btn btn-secondary">Explore Features</a>
           </div>
         </div>
         <div className={styles.heroImageWrapper}>
@@ -31,7 +31,7 @@ export default function Home() {
       </section>
 
       {/* Solutions Grid */}
-      <section className={styles.gridSection}>
+      <section id="features" className={styles.gridSection}>
         <div className={styles.sectionHeader}>
           <h2>Solutions for Growth</h2>
           <p>Every inbound channel produces a consistent, high-value "Lead Event".</p>
@@ -56,7 +56,7 @@ export default function Home() {
             <div className={styles.iconBox}>⚡</div>
             <h3>Instant Tracking</h3>
             <p>Real-time lead events logged directly to the timeline without chat clutter.</p>
-            <a href="/leads/123" className={styles.learnMore}>View Timeline →</a>
+            <a href="/leads" className={styles.learnMore}>View Timeline →</a>
           </div>
         </div>
       </section>

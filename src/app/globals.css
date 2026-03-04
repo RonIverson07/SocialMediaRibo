@@ -1,3 +1,7 @@
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   /* Tecnologia Theme Color Palette */
   --primary: #0010B3;
@@ -80,6 +84,7 @@ p {
   border: none;
   gap: 0.75rem;
   text-transform: none;
+  text-decoration: none;
 }
 
 .btn-primary {
