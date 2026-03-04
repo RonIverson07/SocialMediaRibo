@@ -45,14 +45,44 @@ function IntegrationsTabs() {
     );
 }
 
-export default function IntegrationsLayout({ children }: { children: React.ReactNode }) {
+function IntegrationsResponsiveHeader({ onAddClick }: { onAddClick: () => void }) {
     const pathname = usePathname();
     const searchParams = useSearchParams();
+
     const isMappingPage = pathname.includes('/mapping');
     const isFilteredLogs = pathname.includes('/logs') && searchParams.get('type');
-
-    // Hide main dashboard header if we are in a sub-configuration page
     const hideHeader = isMappingPage || isFilteredLogs;
+    const isLogsPage = pathname.includes('/integrations/logs');
+
+    if (hideHeader) return null;
+
+    return (
+        <>
+            <header className={styles.header}>
+                <div>
+                    <h1>Integrations Dashboard</h1>
+                    <p>Connect and configure your omnichannel lead sources.</p>
+                </div>
+                {!isLogsPage && (
+                    <button
+                        className="btn btn-primary"
+                        onClick={onAddClick}
+                    >
+                        Add New Channel
+                    </button>
+                )}
+            </header>
+
+            <Suspense fallback={<div className={styles.tabs}>Loading tabs...</div>}>
+                <IntegrationsTabs />
+            </Suspense>
+        </>
+    );
+}
+
+export default function IntegrationsLayout({ children }: { children: React.ReactNode }) {
+    const pathname = usePathname();
+    // Removed useSearchParams from top-level layout to avoid build errors
 
     const [showAddModal, setShowAddModal] = React.useState(false);
     const [addingId, setAddingId] = React.useState<string | null>(null);
@@ -93,28 +123,9 @@ export default function IntegrationsLayout({ children }: { children: React.React
 
     return (
         <div className={styles.container}>
-            {!hideHeader && (
-                <>
-                    <header className={styles.header}>
-                        <div>
-                            <h1>Integrations Dashboard</h1>
-                            <p>Connect and configure your omnichannel lead sources.</p>
-                        </div>
-                        {!isLogsPage && (
-                            <button
-                                className="btn btn-primary"
-                                onClick={() => setShowAddModal(true)}
-                            >
-                                Add New Channel
-                            </button>
-                        )}
-                    </header>
-
-                    <Suspense fallback={<div className={styles.tabs}>Loading tabs...</div>}>
-                        <IntegrationsTabs />
-                    </Suspense>
-                </>
-            )}
+            <Suspense fallback={<div className={styles.header}>Loading header...</div>}>
+                <IntegrationsResponsiveHeader onAddClick={() => setShowAddModal(true)} />
+            </Suspense>
 
             {children}
 
