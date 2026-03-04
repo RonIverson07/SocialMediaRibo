@@ -1,5 +1,5 @@
 .container {
-    padding: 3rem 2.5rem;
+    padding: 1.5rem 2.5rem;
     max-width: 1300px;
     margin: 0 auto;
     background-color: #ffffff;
@@ -9,29 +9,29 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 3rem;
-    padding-bottom: 2rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
     border-bottom: 2px solid #eeeeee;
 }
 
 .profile {
     display: flex;
     align-items: center;
-    gap: 2.5rem;
+    gap: 1.5rem;
 }
 
 .avatar {
-    width: 90px;
-    height: 90px;
+    width: 70px;
+    height: 70px;
     background-color: #0010B3;
-    border-radius: 20px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 900;
     color: white;
-    box-shadow: 0 16px 32px rgba(0, 16, 179, 0.1);
+    box-shadow: 0 12px 24px rgba(0, 16, 179, 0.1);
 }
 
 .mainGrid {

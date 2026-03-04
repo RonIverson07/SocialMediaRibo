@@ -200,7 +200,7 @@ function MappingContent() {
                 </div>
             </header>
 
-            <div className="ribo-card" style={{ marginBottom: '3rem' }}>
+            <div className="ribo-card" style={{ marginBottom: '1.5rem' }}>
                 <h3 className={styles.sectionTitle}>Field Mapping</h3>
                 <p className={styles.sectionMuted}>Link external keys from payloads to your CRM profile fields.</p>
                 <table className={styles.table}>

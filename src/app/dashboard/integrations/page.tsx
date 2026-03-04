@@ -173,105 +173,122 @@ function IntegrationsContent() {
         setModalConfig({ show: false, id: null, type: null });
     };
 
-    const displayedIntegrations = filter === 'active'
-        ? integrations.filter(i => i.status === 'Connected')
-        : integrations;
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const displayedIntegrations = integrations
+        .filter(i => filter === 'active' ? i.status === 'Connected' : true)
+        .filter(i => i.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
     if (loading) return <div style={{ textAlign: 'center', padding: '4rem' }}><h2>Syncing with database...</h2></div>;
 
     return (
-        <div className={styles.grid}>
-            {displayedIntegrations.map((integration: any) => (
-                <div key={integration.id} className={`${styles.card} ribo-card`}>
-                    <div className={styles.cardHeader}>
-                        <div className={styles.icon}>{integration.icon}</div>
-                        <div className={styles.badge} data-status={integration.status?.toLowerCase()}>
-                            {integration.status}
+        <>
+            <div className={styles.searchBar}>
+                <div className={styles.searchInputWrapper}>
+                    <span className={styles.searchIcon}>🔍</span>
+                    <input
+                        type="text"
+                        className={styles.searchInput}
+                        placeholder="Search channels..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
+            </div>
+
+            <div className={styles.grid}>
+                {displayedIntegrations.map((integration: any) => (
+                    <div key={integration.id} className={`${styles.card} ribo-card`}>
+                        <div className={styles.cardHeader}>
+                            <div className={styles.icon}>{integration.icon}</div>
+                            <div className={styles.badge} data-status={integration.status?.toLowerCase()}>
+                                {integration.status}
+                            </div>
                         </div>
-                    </div>
-                    <h3 className={styles.cardTitle}>{integration.name}</h3>
-                    <div className={styles.cardMeta}>
-                        <span>Last inbound: {integration.lastEvent}</span>
-                    </div>
-                    <div className={styles.actions}>
-                        <button
-                            className="btn btn-secondary"
-                            disabled={isTesting === integration.id || integration.status !== 'Connected'}
-                            onClick={() => handleTestConnection(integration)}
-                        >
-                            {isTesting === integration.id ? 'Testing...' : 'Test'}
-                        </button>
-                        <a href={`/dashboard/integrations/mapping?type=${integration.id}`} className="btn btn-secondary">Configure</a>
-                        {integration.status === 'Connected' ? (
+                        <h3 className={styles.cardTitle}>{integration.name}</h3>
+                        <div className={styles.cardMeta}>
+                            <span>Last inbound: {integration.lastEvent}</span>
+                        </div>
+                        <div className={styles.actions}>
                             <button
                                 className="btn btn-secondary"
-                                style={{ color: '#ef4444' }}
-                                onClick={() => handleToggleStatus(integration.id, integration.status)}
+                                disabled={isTesting === integration.id || integration.status !== 'Connected'}
+                                onClick={() => handleTestConnection(integration)}
                             >
-                                Disconnect
+                                {isTesting === integration.id ? 'Testing...' : 'Test'}
                             </button>
-                        ) : (
-                            <button
-                                className="btn btn-primary"
-                                onClick={() => handleToggleStatus(integration.id, integration.status)}
-                            >
-                                Connect
-                            </button>
-                        )}
-                    </div>
-                    <div className={styles.secondaryActions}>
-                        <a href={`/dashboard/settings/ai?channel=${integration.id}`}>AI Settings</a>
-                        <span>•</span>
-                        <a href={`/dashboard/integrations/logs?type=${integration.id}`}>View Logs</a>
-
-                        {/* Trash Button aligned to the right */}
-                        <button
-                            className={styles.deleteBtn}
-                            onClick={() => handleDelete(integration.id)}
-                            title="Delete Integration"
-                        >
-                            🗑️
-                        </button>
-                    </div>
-                </div>
-            ))}
-
-            {/* Professional Confirmation Modal */}
-            {modalConfig.show && (
-                <div className={styles.modalOverlay}>
-                    <div className={styles.modal}>
-                        <div
-                            className={styles.modalIcon}
-                            style={{
-                                background: modalConfig.type === 'connect' ? '#E6FAF2' : '#FEF2F2',
-                                color: modalConfig.type === 'connect' ? '#059669' : '#DC2626'
-                            }}
-                        >
-                            {modalConfig.type === 'connect' ? '🔌' : modalConfig.type === 'delete' ? '🗑️' : '⚠️'}
+                            <a href={`/dashboard/integrations/mapping?type=${integration.id}`} className="btn btn-secondary">Configure</a>
+                            {integration.status === 'Connected' ? (
+                                <button
+                                    className="btn btn-secondary"
+                                    style={{ color: '#ef4444' }}
+                                    onClick={() => handleToggleStatus(integration.id, integration.status)}
+                                >
+                                    Disconnect
+                                </button>
+                            ) : (
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => handleToggleStatus(integration.id, integration.status)}
+                                >
+                                    Connect
+                                </button>
+                            )}
                         </div>
-                        <h2>{modalConfig.type === 'connect' ? 'Connect' : modalConfig.type === 'delete' ? 'Delete' : 'Disconnect'} {modalConfig.id?.replace(/_/g, ' ').toUpperCase()}?</h2>
-                        <p>
-                            {modalConfig.type === 'connect'
-                                ? `Are you sure you want to activate this channel? You will start receiving leads and processing data from this source.`
-                                : modalConfig.type === 'delete'
-                                    ? `Are you sure you want to PERMANENTLY remove this integration? This will delete the channel and its configuration from your dashboard.`
-                                    : `Are you sure you want to disconnect this channel? You will stop receiving and processing new leads from this source immediately.`
-                            }
-                        </p>
-                        <div className={styles.modalActions}>
-                            <button className="btn btn-secondary" onClick={() => setModalConfig({ show: false, id: null, type: null })}>Cancel</button>
+                        <div className={styles.secondaryActions}>
+                            <a href={`/dashboard/settings/ai?channel=${integration.id}`}>AI Settings</a>
+                            <span>•</span>
+                            <a href={`/dashboard/integrations/logs?type=${integration.id}`}>View Logs</a>
+
+                            {/* Trash Button aligned to the right */}
                             <button
-                                className="btn btn-primary"
-                                style={{ background: modalConfig.type === 'connect' ? 'var(--primary)' : '#DC2626' }}
-                                onClick={confirmToggle}
+                                className={styles.deleteBtn}
+                                onClick={() => handleDelete(integration.id)}
+                                title="Delete Integration"
                             >
-                                {modalConfig.type === 'connect' ? 'Confirm Connection' : modalConfig.type === 'delete' ? 'Confirm Delete' : 'Confirm Disconnect'}
+                                🗑️
                             </button>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                ))}
+
+                {/* Professional Confirmation Modal */}
+                {modalConfig.show && (
+                    <div className={styles.modalOverlay}>
+                        <div className={styles.modal}>
+                            <div
+                                className={styles.modalIcon}
+                                style={{
+                                    background: modalConfig.type === 'connect' ? '#E6FAF2' : '#FEF2F2',
+                                    color: modalConfig.type === 'connect' ? '#059669' : '#DC2626'
+                                }}
+                            >
+                                {modalConfig.type === 'connect' ? '🔌' : modalConfig.type === 'delete' ? '🗑️' : '⚠️'}
+                            </div>
+                            <h2>{modalConfig.type === 'connect' ? 'Connect' : modalConfig.type === 'delete' ? 'Delete' : 'Disconnect'} {modalConfig.id?.replace(/_/g, ' ').toUpperCase()}?</h2>
+                            <p>
+                                {modalConfig.type === 'connect'
+                                    ? `Are you sure you want to activate this channel? You will start receiving leads and processing data from this source.`
+                                    : modalConfig.type === 'delete'
+                                        ? `Are you sure you want to PERMANENTLY remove this integration? This will delete the channel and its configuration from your dashboard.`
+                                        : `Are you sure you want to disconnect this channel? You will stop receiving and processing new leads from this source immediately.`
+                                }
+                            </p>
+                            <div className={styles.modalActions}>
+                                <button className="btn btn-secondary" onClick={() => setModalConfig({ show: false, id: null, type: null })}>Cancel</button>
+                                <button
+                                    className="btn btn-primary"
+                                    style={{ background: modalConfig.type === 'connect' ? 'var(--primary)' : '#DC2626' }}
+                                    onClick={confirmToggle}
+                                >
+                                    {modalConfig.type === 'connect' ? 'Confirm Connection' : modalConfig.type === 'delete' ? 'Confirm Delete' : 'Confirm Disconnect'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </>
     );
 }
 

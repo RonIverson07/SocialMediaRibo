@@ -56,6 +56,47 @@
     /* Light purple/gray as seen in screenshot */
 }
 
+.searchBar {
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.searchInputWrapper {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 0.65rem 1.25rem;
+    padding-left: 3rem;
+    border-radius: 12px;
+    border: 2px solid #eeeeee;
+    background: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #000000;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.searchInput:focus {
+    border-color: #0010B3;
+    box-shadow: 0 0 0 4px rgba(0, 16, 179, 0.05);
+}
+
+.searchIcon {
+    position: absolute;
+    left: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999999;
+    font-size: 1.1rem;
+    pointer-events: none;
+}
+
 .grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);

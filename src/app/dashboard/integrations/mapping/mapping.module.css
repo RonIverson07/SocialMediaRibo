@@ -8,8 +8,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 4rem;
-    margin-bottom: 3rem;
+    gap: 2rem;
+    margin-bottom: 1rem;
 }
 
 .headerActions {
@@ -78,6 +78,6 @@
 .sectionMuted {
     font-size: 0.9rem;
     color: #666666;
-    margin-bottom: 2rem;
+    margin-bottom: 0.75rem;
     font-weight: 500;
 }
